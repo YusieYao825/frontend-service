@@ -17,17 +17,16 @@ import {
 class ApprovalRequests extends Component {
 
     componentDidMount() {
-        console.log('a')
         this.props.getSubunitRequests(this.props.unit, this.props.subunit);
     }
 
     displayDetail() {
         const { detailRequest, detailId, backToRequests, approvalRequest, declineRequest,
-            unit, subunit, showApprovedMessage, showDeclinedToast } = this.props;
+            unit, subunit, showApprovedMessage, showDeclinedToast, budget_list } = this.props;
         if (detailId !== '') {
             const detail = Immutable.List(detailRequest).toJS()[0];
-            // console.log(detail);
-            return (
+            console.log(detail);
+            return ( detail === undefined ? null : 
                 <Fragment>
                     <Card className='card'>
                         <Card.Content>
@@ -41,7 +40,18 @@ class ApprovalRequests extends Component {
                                 <div><b>Legal Last Name</b>: {detail.legalLastName}</div>
                                 <div><b>Departure</b>: {detail.departure}</div>
                                 <div><b>Destination</b>: {detail.destination}</div>
+                                <div><b>Departing Date</b>: {detail.departingDate}</div>
+                                <div><b>Returning Date</b>: {detail.returningDate}</div>
                                 <div><b>Reason</b>: {detail.reason}</div>
+                                {
+                                    budget_list.map((item, idx) => {
+                                        return (
+                                            <div key={idx}>
+                                                <b>Budget Number and Amount</b>: {budget_list.toJS()[idx].budget_number}, ${budget_list.toJS()[idx].amount}
+                                            </div>
+                                        );
+                                    })
+                                }
                             </Card.Description>
                         </Card.Content>
                         { detail.declinedReason ? 
@@ -170,6 +180,7 @@ const mapStateToProps = (state) => {
         showDeclinedToast: state.getIn(['approvalrequest', 'showDeclinedToast']),
         showDeclineMessageInputBox: state.getIn(['approvalrequest', 'showDeclineMessageInputBox']),
         reason: state.getIn(['approvalrequest', 'reason']),
+        budget_list: state.getIn(['request', 'budget_list']),
     }
 }
 
@@ -179,7 +190,9 @@ const mapDispatchToProps = (dispatch) => {
             dispatch(actionCreators.getSubunitRequests(unit, subunit));
         },
         seeRequestDetail(id) {
-            dispatch(actionCreators.changeDetailId(id));
+            console.log(id)
+            dispatch(actionCreators.getRequestDetail(id));
+            dispatch(actionCreators.getBudgetDetail(id));
         },
         backToRequests(unit, subunit) {
             dispatch(actionCreators.backToRequests());
@@ -190,7 +203,6 @@ const mapDispatchToProps = (dispatch) => {
         },
         declineRequest() {
             dispatch(actionCreators.showDeclineMessageInputBox());
-            //dispatch(actionCreators.declineRequest(detailId));
         },
         updateReason(e) {
             dispatch(actionCreators.updateReasonAction(e.target.value));

@@ -1,11 +1,12 @@
 import * as constants from './actionCreators';
-import { fromJS } from 'immutable';
+import { fromJS, remove, set } from 'immutable';
 
 const defaultState = fromJS({
     formToSubmit: {
         unit: '',
         subunit: '',
         formtype: '',
+        budget_numbers:[],
     },
     static: {
         list: [],
@@ -18,7 +19,12 @@ const defaultState = fromJS({
         legal_lastname: '',
         departure: '',
         destination: '',
+        departing_date: '',
+        returning_date: '',
         reason: '',
+        budget_list: [ 
+            { budget_number: '', amount: '' },
+        ],
     }
 });
 
@@ -30,6 +36,8 @@ const reducer = (state = defaultState, action) => {
             return state.setIn(['formToSubmit','unit'], action.data);
         case constants.READ_INPUT_SUBUNIT:
             return state.setIn(['formToSubmit','subunit'], action.data);
+        case constants.CHANGE_BUDGET_NUMBERS: 
+            return state.setIn(['formToSubmit','budget_numbers'], action.data);
         case constants.GET_SUBUNITS:
             return state.setIn(['static','subunit'], action.data);
         case constants.GET_FORMLIST:
@@ -44,40 +52,57 @@ const reducer = (state = defaultState, action) => {
             return state.setIn(['tra', 'departure'], action.value);
         case constants.UPDATE_DESTINATION:
             return state.setIn(['tra', 'destination'], action.value);
+        case constants.UPDATE_DEPARTURE_DATE:
+            return state.setIn(['tra', 'departing_date'], action.value);
+        case constants.UPDATE_RETURNING_DATE:
+            return state.setIn(['tra', 'returning_date'], action.value);
         case constants.UPDATE_REASON:
             return state.setIn(['tra', 'reason'], action.value);
+        case constants.READ_INPUT_BUDGET:
+            return state.setIn(['tra', 'budget_list', action.idx, 'budget_number'], action.data);
+        case constants.READ_INPUT_AMOUNT:
+            return state.setIn(['tra', 'budget_list', action.idx, 'amount'], action.data);
+        case constants.ADD_MORE_BUDGET_NUMBER:
+            return state.updateIn(['tra', 'budget_list'], arr => arr.push(action.value));
+        case constants.REMOVE_BUDGET_NUMBER:
+            return state.updateIn(['tra', 'budget_list'], arr => remove(arr, action.idx));
         case constants.SUBMIT_TRAVEL_REQUEST_FORM:
-            return state.merge({
-                formToSubmit: {
-                    unit: '',
-                    subunit: '',
-                    formtype: '',
-                },
+            return state.merge(fromJS({
+                formToSubmit: { unit: '', subunit: '', formtype: '', budget_numbers:[] },
                 tra: {
                     legal_firstname: '',
                     legal_lastname: '',
                     departure: '',
                     destination: '',
+                    departing_date: '',
+                    returning_date: '',
                     reason: '',
+                    budget_list: [ 
+                        { budget_number: '', amount: '' },
+                    ],
                 },
                 showSuccessToast: true
-            });
+            }));
         case constants.CREATE_ANOTHER_REQUEST:
             return state.setIn(['showSuccessToast'], false);
         case constants.RESET_FORM_TYPE:
         case constants.CHANGE_TO_LOGOUT:
-            return state.merge({
-                formToSubmit: {
-                    unit: '',
-                    subunit: '',
-                    formtype: '',
-                },
+            return state.merge(fromJS({
+                formToSubmit: { unit: '', subunit: '', formtype: '', budget_numbers:[] },
                 tra: {
                     legal_firstname: '',
-                    legal_lastname:''
+                    legal_lastname: '',
+                    departure: '',
+                    destination: '',
+                    departing_date: '',
+                    returning_date: '',
+                    reason: '',
+                    budget_list: [ 
+                        { budget_number: '', amount: '' },
+                    ],
                 },
                 showSuccessToast: false
-            });
+            }));
         default:
             return state;
     }
